@@ -1,0 +1,64 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - 'main'    # Rama principal donde quieres validar los PRs
+      - 'develop' # Si tienes otra rama como objetivo de los PRs
+    paths:
+      - '**/*'   # Asegura que se ejecute el workflow para cualquier cambio en el PR
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Validate branch name
+        run: |
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}")
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|fix|hotfix|docs|release)\/.+$ ]]; then
+            echo "Error: Invalid branch name. Branch names must start with one of the following prefixes: feature/, fix/, hotfix/, docs/, or release/ and must not be empty after the prefix."
+            exit 1
+          fi
+
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: validate-branch-name  # Solo se ejecuta si la validación de nombre de rama pasa
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js (o cualquier entorno que uses)
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Especifica la versión de Node.js, ajusta según el proyecto
+
+      - name: Install dependencies
+        run: |
+          npm install   # o el comando que uses para instalar dependencias
+
+      - name: Run tests
+        run: |
+          npm test  # o el comando para ejecutar tus pruebas
+
+  status-check:
+    runs-on: ubuntu-latest
+    needs: run-tests  # Asegura que solo se ejecute si los tests pasan
+
+    steps:
+      - name: Set up GitHub CLI
+        uses: cli/cli@v2
+
+      - name: Check status checks
+        run: |
+          # Verifica si todos los status checks han pasado en el PR antes de permitir la fusión
+          gh pr checks --repo ${{ github.repository }} --pr ${GITHUB_REF#refs/pull/} --status success
+
+      - name: Comment on PR if validation fails
+        if: failure()  # Si la validación falla, añade un comentario al PR
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "The branch name is invalid, please use a valid prefix (feature/, fix/, hotfix/, docs/, release/)."
