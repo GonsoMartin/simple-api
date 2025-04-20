@@ -1,0 +1,25 @@
+name: Branch Naming Validation
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+      - 'fix/*'
+      - 'hotfix/*'
+      - 'docs/*'
+      - 'release/*'
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Validate branch name
+        run: |
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}")
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|fix|hotfix|docs|release)\/[a-z0-9-]+$ ]]; then
+            echo "Error: Invalid branch name. Branch names must start with one of the following prefixes: feature/, fix/, hotfix/, docs/, or release/"
+            exit 1
+          fi
