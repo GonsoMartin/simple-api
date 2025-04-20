@@ -24,7 +24,7 @@ jobs:
       - name: Validate branch name
         run: |
           BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}")
-          if [[ ! "$BRANCH_NAME" =~ ^(feature|fix|hotfix|docs|release)\/[a-z0-9-]+$ ]]; then
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|fix|hotfix|docs|release)\/.+$ ]]; then
             echo "Error: Invalid branch name. Branch names must start with one of the following prefixes: feature/, fix/, hotfix/, docs/, or release/"
             exit 1
           fi
