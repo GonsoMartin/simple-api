@@ -9,6 +9,11 @@ on:
       - 'docs/*'
       - 'release/*'
 
+  pull_request:
+    branches:
+      - 'main'  # O la rama principal de tu repositorio
+      - 'develop'  # Si tienes una rama de desarrollo como objetivo de PR
+
 jobs:
   validate-branch-name:
     runs-on: ubuntu-latest
