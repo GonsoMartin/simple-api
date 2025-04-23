@@ -9,6 +9,8 @@ app = FastAPI()
 fake_db = {
     1: {"name": "Laptop", "price": 1000},
     2: {"name": "Phone", "price": 500},
+    3: {"name": "Tablet", "price": 400},
+    4: {"name": "Headphones", "price": 200},
 }
 
 # Pydantic models (para validar la entrada)
